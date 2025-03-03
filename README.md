@@ -27,7 +27,7 @@ brew install gcc       # (Mac)
 ```
 2️⃣ Clone the Repository
 ```bash
-git clone https://github.com/YOUR_GITHUB_USERNAME/buggy-simulator.git
+git clone https://github.com/TylerWardUOM/Buggy_Simulator
 cd buggy-simulator
 ```
 🚀 Getting Started
