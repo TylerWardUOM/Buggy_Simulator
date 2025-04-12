@@ -35,11 +35,11 @@ buggy = Buggy(left_wheel,right_wheel,buggy_track_width,buggy_weight)
 #Initital State
 voltage_left=10.0
 voltage_right=10.0
-slope_angle = 16.0
-buggy.left_wheel.omega=50.0
-buggy.right_wheel.omega=50.0
+slope_angle = 0.0
+buggy.left_wheel.omega=150.0
+buggy.right_wheel.omega=150.0
 # Simulate for 100 time steps
-def simulate_motion(voltage_left, voltage_right,slope_angle, buggy, time_steps=5000, dt=0.001):
+def simulate_motion(voltage_left, voltage_right,slope_angle, buggy, time_steps=10000, dt=0.001):
     # Simulate the motion over time
     x_traj, y_traj, theta_traj = [], [], []
     left_omega, right_omega = [], []
@@ -53,10 +53,14 @@ def simulate_motion(voltage_left, voltage_right,slope_angle, buggy, time_steps=5
     
     return x_traj, y_traj, theta_traj, left_omega, right_omega
 
-x_traj, y_traj, theta_traj, left_omega, right_omega = simulate_motion(voltage_left, voltage_right,slope_angle,buggy, time_steps=5000)
 
+dt = 0.001
+simulation_time = 20 #s
+time_steps = int(simulation_time/dt)
+x_traj, y_traj, theta_traj, left_omega, right_omega = simulate_motion(voltage_left, voltage_right,slope_angle,buggy, time_steps,dt)
 
-time = np.linspace(0, 5000 * 0.001, 5000)
+print(left_omega[-1])
+time = np.linspace(0, time_steps * dt, time_steps)
 
 fig, axs = plt.subplots(2, 1, figsize=(10, 8))
 
