@@ -10,6 +10,9 @@ class Wheel:
         self.omega = 0.0  # Angular velocity (rad/s)
         # Rolling resistance coefficient (tunable parameter)
 
+
+    def reset(self):
+        self.omega=0.0
     def get_torque(self, voltage):
         """
         Calculate the output torque at the wheel.
@@ -55,9 +58,9 @@ class Wheel:
         return T_net/self.radius
 
     
-    def update(self, acceleration, dt):
+    def update(self, linear_velocity):
         # Update the angular velocity:
-        self.omega += (acceleration/self.radius) * dt
+        self.omega = (linear_velocity/self.radius)
         
 
     def get_velocity(self):
