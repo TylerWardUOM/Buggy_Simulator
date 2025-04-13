@@ -9,13 +9,16 @@ def perpendicular(vec):
     return np.array([-vec[1], vec[0]])
 
 class Buggy:
-    def __init__(self, left_wheel, right_wheel, track_width, mass):
+    def __init__(self, left_wheel, right_wheel, track_width, mass, battery, motor_drive_board, friction_coefficient):
         self.left_wheel = left_wheel
         self.left_wheel_position = np.array([0.0,-10]) #x,y coords
         self.right_wheel = right_wheel
         self.right_wheel_position = np.array([0.0,10]) #x,y coords
         self.track_width = abs(np.linalg.norm(self.left_wheel_position - self.right_wheel_position))
         self.mass = mass
+        self.battery = battery
+        self.motor_drive_board = motor_drive_board
+        self.friction_coefficient = friction_coefficient
         
         self.orientation = 0.0 #Angle (rad) relative to world frame 
         self.position = np.array([0.0,0.0])
@@ -33,8 +36,13 @@ class Buggy:
         world_gravity = np.array([self.mass * 9.81 * np.sin(np.deg2rad(slope_angle)),0])
         r_inverse = rotation_matrix(-self.orientation)
         return r_inverse @ world_gravity
+    
+    def calculate_friction_force(self, slope_angle):
+        world_friction = np.array([self.mass * 9.81 * np.cos(np.deg2rad(slope_angle))*self.friction_coefficient,0])
+        r_inverse = rotation_matrix(-self.orientation)
+        return r_inverse @ world_friction
 
-    def update(self, voltage_left, voltage_right, slope_angle, dt):
+    def update(self, duty_left, duty_right, slope_angle, dt):
         """
         Update the buggy state for the time increment dt.
         This includes:
@@ -42,17 +50,20 @@ class Buggy:
           - Computing net forces on the buggy (subtracting gravity along the slope).
           - Updating the buggy's translational and rotational state.
         """
+        self.motor_drive_board.set_duty_left(duty_left)
+        self.motor_drive_board.set_duty_right(duty_right)
         # ----- Step 1. Compute gravitational force along the slope -----
         force_gravity = -self.calculate_gravity_force(slope_angle)
-        force_left = self.left_wheel.get_force(voltage_left)
-        force_right = self.right_wheel.get_force(voltage_right)
+        force_friction = -self.calculate_friction_force(slope_angle)
+        force_left = self.left_wheel.get_force(self.motor_drive_board.get_voltage_left(self.battery))
+        force_right = self.right_wheel.get_force(self.motor_drive_board.get_voltage_right(self.battery))
 
 
         # Total forward force from both wheels
         force_motor_total = (force_left + force_right)
 
         # Net force: motor force reduced by the gravitational force along the slope.
-        force_net = np.array([force_motor_total,0]) + force_gravity
+        force_net = np.array([force_motor_total,0]) + force_gravity + force_friction
 
         acceleration_net = force_net / self.mass  # Linear acceleration (m/s^2)
         acceleration_net[1] = 0
@@ -82,3 +93,5 @@ class Buggy:
         # Update each wheel by providing both the voltage and the normal force (for resistive effects)
         self.left_wheel.update(left_wheel_velocity)
         self.right_wheel.update(right_wheel_velocity)
+        currentDraw = self.left_wheel.motor.current + self.right_wheel.motor.current
+        self.battery.update(currentDraw)

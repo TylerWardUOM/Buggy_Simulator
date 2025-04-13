@@ -4,6 +4,8 @@ from Gearbox_Model import Gearbox
 from Motor_Model import Motor
 from Wheel_Model import Wheel
 from Buggy import Buggy
+from Battery import Battery
+from MotorDriveBoard import MotorDriveBoard
 
 def rotation_matrix(angle):
     return np.array([[np.cos(angle), -np.sin(angle)],
@@ -24,39 +26,42 @@ gearbox_inertia = 0.0
 
 #Wheel Constants
 wheel_radius = 0.075 #m
-wheel_inertia = 0.0
+wheel_inertia = 0
 #Buggy Constants
 buggy_weight = 1.472 #Kg
 buggy_track_width = 0.22 #m
+friction_coefficent = 0.088
 
 left_motor = Motor(armature_resistance,brush_voltage,torque_constant,emf_constant,motor_max_current,motor_inertia)
 right_motor = Motor(armature_resistance,brush_voltage,torque_constant,emf_constant,motor_max_current,motor_inertia)
 gearbox = Gearbox(gear_ratio,gearbox_inertia,gearbox_efficency)
 left_wheel = Wheel(left_motor,gearbox,wheel_radius,wheel_inertia)
 right_wheel = Wheel(left_motor,gearbox,wheel_radius,wheel_inertia)
-buggy = Buggy(left_wheel,right_wheel,buggy_track_width,buggy_weight)
+battery = Battery(10,0.4)
+motor_drive_board = MotorDriveBoard()
+buggy = Buggy(left_wheel,right_wheel,buggy_track_width,buggy_weight, battery, motor_drive_board, friction_coefficent)
 
 #Initital Stat
 #buggy.left_wheel.omega=150.0
 #buggy.right_wheel.omega=150.0
 buggy.orientation = np.deg2rad(00)
 # Function to generate updated voltages and slope angle as the simulation progresses
-def simulate_motion(voltage_left_func, voltage_right_func, slope_angle_func, buggy, time_steps=10000, dt=0.001):
+def simulate_motion(duty_left_func, duty_right_func, slope_angle_func, buggy, time_steps=10000, dt=0.001):
     # Simulate the motion over time
     x_traj, y_traj, theta_traj = [], [], []
     left_omega, right_omega = [], []
-    left_voltage,right_voltage,slope_angle_log = [], [], []
+    left_duty,right_duty,slope_angle_log = [], [], []
     
     for t in range(time_steps):
         # Get the updated voltage and slope for the current time step
-        voltage_left = voltage_left_func(t, dt)
-        voltage_right = voltage_right_func(t, dt)
+        duty_left = duty_left_func(t, dt)
+        duty_right = duty_right_func(t, dt)
         slope_angle = slope_angle_func(time_steps,t, dt)
-        left_voltage.append(voltage_left)
-        right_voltage.append(voltage_right)
+        left_duty.append(duty_left)
+        right_duty.append(duty_right)
         slope_angle_log.append(slope_angle)
         # Update the buggy state
-        buggy.update(voltage_left, voltage_right, slope_angle, dt)
+        buggy.update(duty_left, duty_right, slope_angle, dt)
         
         # Convert to world frame and collect data
         r = rotation_matrix(buggy.orientation)
@@ -77,19 +82,19 @@ def simulate_motion(voltage_left_func, voltage_right_func, slope_angle_func, bug
             right_omega.append((buggy.right_wheel.omega / (2 * np.pi)) * 60)
 
     
-    return x_traj, y_traj, theta_traj, left_omega, right_omega, left_voltage, right_voltage, slope_angle_log
+    return x_traj, y_traj, theta_traj, left_omega, right_omega, left_duty,right_duty, slope_angle_log
 
-def voltage_left_func(t, dt):
-    voltage = 10.0 + 0 * t  # Increase voltage for the left wheel over time
-    if voltage>=7:
-        voltage=7
-    return voltage
+def duty_left_func(t, dt):
+    duty = 1.0 + 0 * t  # Increase duty for the left wheel over time
+    if duty>=0.7:
+        duty=0.7
+    return duty
 
-def voltage_right_func(t, dt):
-    voltage = 6 + 0.5 * t* dt   # Increase voltage for the right wheel over time
-    if voltage>=6:
-        voltage=6
-    return voltage
+def duty_right_func(t, dt):
+    duty = 0.6 + 0.05 * t* dt   # Increase duty for the right wheel over time
+    if duty>=0.6:
+        duty=0.6
+    return duty
 
 def slope_angle_func(time_steps, t, dt):
     # Cycle duration (time for a full up-down cycle)
@@ -130,7 +135,7 @@ def slope_angle_func(time_steps, t, dt):
 dt = 0.01
 simulation_time = 100 #s
 time_steps = int(simulation_time/dt)
-x_traj, y_traj, theta_traj, left_omega, right_omega, left_voltage, right_voltage, slope_angle_log = simulate_motion(voltage_left_func, voltage_right_func,slope_angle_func,buggy, time_steps,dt)
+x_traj, y_traj, theta_traj, left_omega, right_omega, left_voltage, right_voltage, slope_angle_log = simulate_motion(duty_left_func, duty_right_func,slope_angle_func,buggy, time_steps,dt)
 
 print(left_omega[-1])
 time = np.linspace(0, time_steps * dt, time_steps)

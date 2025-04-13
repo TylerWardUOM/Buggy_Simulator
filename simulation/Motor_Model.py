@@ -11,6 +11,7 @@ class Motor:
         self.emf_constant = emf_constant
         self.max_current = max_current
         self.inertia = inertia
+        self.current = 0
 
     def calculate_back_emf(self,omega):
         return self.emf_constant*omega
@@ -19,8 +20,8 @@ class Motor:
         effective_voltage = (voltage - self.brush_voltage) - self.emf_constant * omega
         current = effective_voltage / self.armature_resistance
         #print(effective_voltage,omega,current)
-        current = max(min(current, self.max_current), -self.max_current)
-        return current
+        self.current = max(min(current, self.max_current), -self.max_current)
+        return self.current
 
     def get_torque(self, voltage, omega):
         current = self.calculate_current(voltage, omega)
