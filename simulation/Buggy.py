@@ -41,8 +41,14 @@ class Buggy:
         world_friction = np.array([self.mass * 9.81 * np.cos(np.deg2rad(slope_angle))*self.friction_coefficient,0])
         r_inverse = rotation_matrix(-self.orientation)
         return r_inverse @ world_friction
+    
+    def set_duty(self,duty_left,duty_right):
+        if duty_left!=None:
+            self.motor_drive_board.set_duty_left(duty_left)
+        if duty_right!=None:
+            self.motor_drive_board.set_duty_right(duty_right)
 
-    def update(self, duty_left, duty_right, slope_angle, dt):
+    def update(self, slope_angle, dt):
         """
         Update the buggy state for the time increment dt.
         This includes:
@@ -50,8 +56,6 @@ class Buggy:
           - Computing net forces on the buggy (subtracting gravity along the slope).
           - Updating the buggy's translational and rotational state.
         """
-        self.motor_drive_board.set_duty_left(duty_left)
-        self.motor_drive_board.set_duty_right(duty_right)
         # ----- Step 1. Compute gravitational force along the slope -----
         force_gravity = -self.calculate_gravity_force(slope_angle)
         force_friction = -self.calculate_friction_force(slope_angle)
