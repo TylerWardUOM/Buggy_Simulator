@@ -1,11 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from Gearbox_Model import Gearbox
-from Motor_Model import Motor
-from Wheel_Model import Wheel
-from Buggy import Buggy
-from Battery import Battery
-from MotorDriveBoard import MotorDriveBoard
+from Buggy.Wheel.Gearbox_Model import Gearbox
+from Buggy.Wheel.Motor_Model import Motor
+from Buggy.Wheel.Wheel_Model import Wheel
+from Buggy.Buggy import Buggy
+from Buggy.Power.Battery import Battery
+from Buggy.Power.MotorDriveBoard import MotorDriveBoard
 
 def rotation_matrix(angle):
     return np.array([[np.cos(angle), -np.sin(angle)],

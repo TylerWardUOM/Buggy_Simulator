@@ -1,7 +1,7 @@
 import numpy as np
-from Wheel_Model import Wheel
-from MotorDriveBoard import MotorDriveBoard
-from Battery import Battery
+from Buggy.Wheel.Wheel_Model import Wheel
+from Buggy.Power.MotorDriveBoard import MotorDriveBoard
+from Buggy.Power.Battery import Battery
 #Buggy Local Coordinate frame origin at the centre of mass
 #X along Direction of travel
 def rotation_matrix(angle):
