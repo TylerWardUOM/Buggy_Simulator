@@ -1,4 +1,7 @@
 import numpy as np
+from Wheel_Model import Wheel
+from MotorDriveBoard import MotorDriveBoard
+from Battery import Battery
 #Buggy Local Coordinate frame origin at the centre of mass
 #X along Direction of travel
 def rotation_matrix(angle):
@@ -9,7 +12,7 @@ def perpendicular(vec):
     return np.array([-vec[1], vec[0]])
 
 class Buggy:
-    def __init__(self, left_wheel, right_wheel, track_width, mass, battery, motor_drive_board, friction_coefficient):
+    def __init__(self, left_wheel: Wheel, right_wheel: Wheel, track_width, mass, battery: Battery, motor_drive_board: MotorDriveBoard, friction_coefficient):
         self.left_wheel = left_wheel
         self.left_wheel_position = np.array([0.0,-10]) #x,y coords
         self.right_wheel = right_wheel
@@ -42,6 +45,11 @@ class Buggy:
         r_inverse = rotation_matrix(-self.orientation)
         return r_inverse @ world_friction
     
+    def calculate_normal_force(self,slope_angle):
+        world_normal = np.array([self.mass * 9.81 * np.cos(np.deg2rad(slope_angle)),0])
+        r_inverse = rotation_matrix(-self.orientation)
+        return r_inverse @ world_normal
+    
     def set_duty(self,duty_left,duty_right):
         if duty_left!=None:
             self.motor_drive_board.set_duty_left(duty_left)
@@ -59,16 +67,22 @@ class Buggy:
         # ----- Step 1. Compute gravitational force along the slope -----
         force_gravity = -self.calculate_gravity_force(slope_angle)
         force_friction = -self.calculate_friction_force(slope_angle)
-        force_left = self.left_wheel.get_force(self.motor_drive_board.get_voltage_left(self.battery))
-        force_right = self.right_wheel.get_force(self.motor_drive_board.get_voltage_right(self.battery))
 
+        #Only along wheel path for now
+        resitive_forces = force_gravity[0] + force_friction[0]
+        normal_force_wheel = self.calculate_normal_force(slope_angle)[0] / 2
 
+        voltage_left = self.motor_drive_board.get_voltage_left(self.battery)
+        voltage_right = self.motor_drive_board.get_voltage_right(self.battery)
+
+        #self.left_wheel.update_dynamics(voltage_left,normal_force_wheel,dt)
+        #self.right_wheel.update_dynamics(voltage_right,normal_force_wheel,dt)
+        force_left = self.left_wheel.get_drive_force(voltage_left,normal_force_wheel)
+        force_right = self.right_wheel.get_drive_force(voltage_right,normal_force_wheel)
         # Total forward force from both wheels
         force_motor_total = (force_left + force_right)
-
         # Net force: motor force reduced by the gravitational force along the slope.
-        force_net = np.array([force_motor_total,0]) + force_gravity + force_friction
-
+        force_net = np.array([force_motor_total,0])+resitive_forces
         acceleration_net = force_net / self.mass  # Linear acceleration (m/s^2)
         acceleration_net[1] = 0
         #Torque

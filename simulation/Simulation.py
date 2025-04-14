@@ -96,7 +96,7 @@ def duty_left_func(t, dt):
     return duty
 
 def duty_right_func(t, time_steps):
-    duty = 1+0.5*(t/time_steps)  # Increase duty for the right wheel over time
+    duty = 0.6+0.05*(t/time_steps*0.3)  # Increase duty for the right wheel over time
     if duty >= 0.8:
         duty = 0.8
     return duty
@@ -112,12 +112,11 @@ def slope_angle_func(position):
     wavelength = 10  # length of one cycle (the distance between peaks)
     return amplitude * np.sin(2 * np.pi * position[0] / wavelength)
 
-dt = 0.0001
-simulation_time = 5  # s
+dt = 0.01
+simulation_time = 10  # s
 time_steps = int(simulation_time / dt)
 x_traj, y_traj, theta_traj, left_omega, right_omega, left_voltage, right_voltage, position_log = simulate_motion(duty_left_func, duty_right_func,slope_angle_func, buggy, time_steps, dt)
 
-print(left_omega[-1])
 
 time = np.linspace(0, time_steps * dt, time_steps)
 
