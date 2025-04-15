@@ -26,6 +26,14 @@
       "battery": {
         "nominal_voltage": 10,
         "internal_resistance": 0.8
+      },
+      "sensor_array": {
+      "sensor_count": 3,
+      "sensor_coordinates": [
+          [0.1, -0.05],
+          [0.1, 0.0],
+          [0.1, 0.05]
+      ]
       }
     },
     "buggy_2": {
@@ -55,7 +63,15 @@
       "battery": {
         "nominal_voltage": 10,
         "internal_resistance": 0.8
-      }
+      },
+        "sensor_array": {
+        "sensor_count": 3,
+        "sensor_coordinates": [
+            [0.1, -0.05],
+            [0.1, 0.0],
+            [0.1, 0.05]
+        ]
+        }
     }
   }
   

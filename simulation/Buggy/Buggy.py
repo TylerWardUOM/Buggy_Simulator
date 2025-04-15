@@ -5,6 +5,7 @@ from .Wheel.Motor_Model import Motor
 from .Wheel.Gearbox_Model import Gearbox
 from .Power.MotorDriveBoard import MotorDriveBoard
 from .Power.Battery import Battery
+from .Sensors.SensorArray import SensorArray
 #Buggy Local Coordinate frame origin at the centre of mass
 #X along Direction of travel
 def rotation_matrix(angle):
@@ -15,7 +16,11 @@ def perpendicular(vec):
     return np.array([-vec[1], vec[0]])
 
 class Buggy:
-    def __init__(self, left_wheel: Wheel, right_wheel: Wheel, track_width, mass, battery: Battery, motor_drive_board: MotorDriveBoard, friction_coefficient):
+    def __init__(self, left_wheel: Wheel, right_wheel: Wheel, 
+                 track_width, mass, battery: Battery, 
+                 motor_drive_board: MotorDriveBoard, friction_coefficient, 
+                 sensor_array: SensorArray):
+        
         self.left_wheel = left_wheel
         self.left_wheel_position = np.array([0.0,-10]) #x,y coords
         self.right_wheel = right_wheel
@@ -25,6 +30,7 @@ class Buggy:
         self.battery = battery
         self.motor_drive_board = motor_drive_board
         self.friction_coefficient = friction_coefficient
+        self.sensor_array = sensor_array
         
         self.orientation = 0.0 #Angle (rad) relative to world frame 
         self.position = np.array([0.0,0.0])
@@ -131,6 +137,10 @@ def load_buggys(filename):
         wheel = info.get("wheel", {})
         buggy = info.get("buggy", {})
         battery = info.get("battery", {})
+        sensors = info.get("sensor_array", {})
+
+        sensor_coords = [np.array(coord) for coord in sensors.get("sensor_coordinates", [])]
+        sensor_array = SensorArray(sensor_coords)
 
         left_motor = Motor(
             motor["armature_resistance"],
@@ -161,7 +171,8 @@ def load_buggys(filename):
             buggy["weight"],
             buggy_battery,
             motor_drive_board,
-            buggy["friction_coefficient"]
+            buggy["friction_coefficient"],
+            sensor_array
         )
 
         buggys.append((name, buggy_instance))
@@ -170,7 +181,7 @@ def load_buggys(filename):
 
 
 
-def select_buggy(buggys):
+def select_buggy(buggys) -> Buggy:
     print("Available Buggys:")
     for i, buggy in enumerate(buggys):
         print(f"{i + 1}. {buggy[0]}")
