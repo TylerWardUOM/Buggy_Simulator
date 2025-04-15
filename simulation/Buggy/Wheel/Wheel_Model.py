@@ -49,7 +49,6 @@ class Wheel:
         # The np.sign(self.omega) returns +1 when omega>0 and -1 when omega<0. Flipping it applies the resistive torque in the opposite direction.
         direction = -np.sign(self.omega) if self.omega != 0 else 1
         resistive_torque = direction * self.rolling_resistance_coeff * normal_force * self.radius
-        print(resistive_torque)
         net_torque = motor_torque + resistive_torque
         return net_torque
         
