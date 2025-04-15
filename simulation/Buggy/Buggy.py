@@ -80,6 +80,19 @@ class Buggy:
           - Computing net forces on the buggy (subtracting gravity along the slope).
           - Updating the buggy's translational and rotational state.
         """
+
+        left_wheel_velocity = self.local_velocity[0] + self.angular_velocity * self.left_wheel_position[1]
+        right_wheel_velocity = self.local_velocity[0] + self.angular_velocity * self.right_wheel_position[1]
+
+        #print(f"Torque: {torque_buggy}, Left Force: {force_left}, Right Force: {force_right}")
+        #print(f"Left Wheel Velocity: {left_wheel_velocity}, Right Wheel Velocity: {right_wheel_velocity}")
+
+        # ----- Step 3. Update wheel dynamics -----
+        # Update each wheel by providing both the voltage and the normal force (for resistive effects)
+        self.left_wheel.update(left_wheel_velocity)
+        self.right_wheel.update(right_wheel_velocity)
+        currentDraw = self.left_wheel.motor.current + self.right_wheel.motor.current
+        self.battery.update(currentDraw)
         # ----- Step 1. Compute gravitational force along the slope -----
         force_gravity = -self.calculate_gravity_force(slope_angle)
         force_friction = -self.calculate_friction_force(slope_angle)
@@ -110,8 +123,8 @@ class Buggy:
 
         #Torque
         # Approximate moment of inertia for yaw (using a point mass model) 
-        intertia_buggy = self.mass * (self.track_width / 2)**2
-        #intertia_buggy = 0.0014
+        #intertia_buggy = self.mass * (self.track_width / 2)**2
+        intertia_buggy = 0.0012
                 # Yaw torque: difference in forces multiplied by track width (lever arm)
         torque_buggy = (force_right - force_left) * self.track_width
         angular_acceleration_buggy = torque_buggy / intertia_buggy  # Angular acceleration (rad/s^2)
@@ -126,22 +139,6 @@ class Buggy:
         # Update velocities
         #Update world Frame Position
         self.position += self.velocity * dt
-
-        left_wheel_velocity = self.local_velocity[0] + self.angular_velocity * self.left_wheel_position[1]
-        right_wheel_velocity = self.local_velocity[0] + self.angular_velocity * self.right_wheel_position[1]
-
-        #print(f"Torque: {torque_buggy}, Left Force: {force_left}, Right Force: {force_right}")
-        #print(f"Left Wheel Velocity: {left_wheel_velocity}, Right Wheel Velocity: {right_wheel_velocity}")
-
-        left_wheel_acceleration = force_left/self.mass
-        right_wheel_acceleration = force_right/self.mass
-
-        # ----- Step 3. Update wheel dynamics -----
-        # Update each wheel by providing both the voltage and the normal force (for resistive effects)
-        self.left_wheel.update(left_wheel_velocity)
-        self.right_wheel.update(right_wheel_velocity)
-        currentDraw = self.left_wheel.motor.current + self.right_wheel.motor.current
-        self.battery.update(currentDraw)
 
 
 
