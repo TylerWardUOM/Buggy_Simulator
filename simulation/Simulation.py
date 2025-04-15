@@ -1,4 +1,5 @@
 from typing import TypedDict, List, Tuple
+from tqdm import trange
 import numpy as np
 from .Buggy.Buggy import Buggy
 from .Track.Track import Track
@@ -37,7 +38,7 @@ def simulate_motion(control_func, control_period, buggy: Buggy, track: Track, ti
 
     lost_count = 0
     
-    for t in range(time_steps):
+    for t in trange(time_steps, desc="Simulating"):
         sensor_value = buggy.sensor_array.get_readings(buggy.position, buggy.orientation, track)
 
         if t % control_count == 0:
@@ -69,6 +70,9 @@ def simulate_motion(control_func, control_period, buggy: Buggy, track: Track, ti
         if sum(sensor_value) < 0.0001:
             lost_count += 1
             if lost_count >= time_steps * 0.1:
+                sim_time = (t + 1) * dt
+                sim_percent = 100 * (t + 1) / time_steps
+                print(f"\n⚠️ Simulation ended early at {sim_percent:.1f}% ({sim_time:.2f} seconds simulated) due to line loss.")
                 break
 
     return result
