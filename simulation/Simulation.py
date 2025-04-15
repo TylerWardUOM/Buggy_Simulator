@@ -18,7 +18,7 @@ class SimulationResult(TypedDict):
     error_values: List[float]
 
 
-def simulate_motion(control_func, buggy: Buggy, track: Track, time_steps=10000, dt=0.001) -> SimulationResult:
+def simulate_motion(control_func, control_period, buggy: Buggy, track: Track, time_steps=10000, dt=0.001) -> SimulationResult:
 
     result = {
         "orientation_log": [],
@@ -33,13 +33,14 @@ def simulate_motion(control_func, buggy: Buggy, track: Track, time_steps=10000, 
         "time_steps": time_steps,
         "error_values": [],
     }
-    
+    control_count = control_period/dt
+
     lost_count = 0
     
     for t in range(time_steps):
         sensor_value = buggy.sensor_array.get_readings(buggy.position, buggy.orientation, track)
 
-        if t % 10 == 0:
+        if t % control_count == 0:
             duty_left, duty_right = control_func(sensor_value, buggy.motor_drive_board.duty_left, buggy.motor_drive_board.duty_right)
             buggy.set_duty(duty_left, duty_right)
 

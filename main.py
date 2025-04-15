@@ -21,7 +21,7 @@ dt = 0.001
 simulation_time = 10  # s
 time_steps = int(simulation_time / dt)
 
-results = simulate_motion(BangBang, buggy, track,time_steps, dt)
+results = simulate_motion(BangBang,0.01, buggy, track,time_steps, dt)
 
 # Unpack from dictionary
 orientation_log = results["orientation_log"]
