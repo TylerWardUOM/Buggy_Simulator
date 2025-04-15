@@ -1,7 +1,8 @@
 import numpy as np
+import json
 
 class Track:
-    def __init__(self, path_points, width, line_width=0.017):
+    def __init__(self, path_points, width, line_width=0.017, name="Unnamed Track"):
         """
         :param path_points: List of (x, y, elevation) tuples defining the track center line.
         :param width: Total width of the track (meters).
@@ -9,6 +10,7 @@ class Track:
         self.path_points = np.array(path_points)  # Nx3: [x, y, z]
         self.width = width
         self.line_width = line_width
+        self.name = name
 
     def get_closest_point(self, buggy_position):
         """
@@ -57,3 +59,45 @@ class Track:
             p1, p2 = self.path_points[idx - 1], self.path_points[idx + 1]
         delta = p2[:2] - p1[:2]
         return delta / np.linalg.norm(delta)
+
+
+def load_tracks(filename, track_width=0.3):
+    with open(filename, "r") as f:
+        data = json.load(f)
+
+    tracks = []
+    for track_id, info in data.items():
+        name = info.get("name", track_id)
+        points = info["points"]
+        track = Track(path_points=points, width=track_width, name=name)
+        tracks.append(track)
+
+    return tracks
+
+
+def select_track(tracks):
+    print("Available Tracks:")
+    for i, track in enumerate(tracks):
+        print(f"{i + 1}. {track.name}")
+
+    while True:
+        selected = input("Type the track name or number to select it: ").strip()
+
+        # Try numeric selection
+        if selected.isdigit():
+            index = int(selected) - 1
+            if 0 <= index < len(tracks):
+                selected_track = tracks[index]
+                print("Selected Track:", selected_track.name)
+                return selected_track
+            else:
+                print("Invalid number. Please choose a valid index.")
+
+        # Try name-based selection (case-insensitive)
+        else:
+            for track in tracks:
+                if track.name.lower() == selected.lower():
+                    print("Selected Track:", track.name)
+                    return track
+
+            print("Not a valid track name. Please choose from the list above.")

@@ -1,7 +1,10 @@
 import numpy as np
-from Buggy.Wheel.Wheel_Model import Wheel
-from Buggy.Power.MotorDriveBoard import MotorDriveBoard
-from Buggy.Power.Battery import Battery
+import json
+from .Wheel.Wheel_Model import Wheel
+from .Wheel.Motor_Model import Motor
+from .Wheel.Gearbox_Model import Gearbox
+from .Power.MotorDriveBoard import MotorDriveBoard
+from .Power.Battery import Battery
 #Buggy Local Coordinate frame origin at the centre of mass
 #X along Direction of travel
 def rotation_matrix(angle):
@@ -113,3 +116,83 @@ class Buggy:
         self.right_wheel.update(right_wheel_velocity)
         currentDraw = self.left_wheel.motor.current + self.right_wheel.motor.current
         self.battery.update(currentDraw)
+
+
+
+def load_buggys(filename):
+    with open(filename, 'r') as f:
+        data = json.load(f)
+
+    buggys = []
+    for buggy_id, info in data.items():
+        name = info.get("name", buggy_id)
+        motor = info.get("motor", {})
+        gearbox_data = info.get("gearbox", {})
+        wheel = info.get("wheel", {})
+        buggy = info.get("buggy", {})
+        battery = info.get("battery", {})
+
+        left_motor = Motor(
+            motor["armature_resistance"],
+            motor["brush_voltage"],
+            motor["torque_constant"],
+            motor["emf_constant"],
+            motor["motor_max_current"],
+            motor["motor_inertia"]
+        )
+        right_motor = left_motor  # Share the same motor instance (or create new if needed)
+
+        gearbox = Gearbox(
+            gearbox_data["gear_ratio"],
+            gearbox_data["gearbox_inertia"],
+            gearbox_data["gearbox_efficiency"]
+        )
+
+        left_wheel = Wheel(left_motor, gearbox, wheel["wheel_radius"], wheel["wheel_inertia"])
+        right_wheel = Wheel(right_motor, gearbox, wheel["wheel_radius"], wheel["wheel_inertia"])
+
+        buggy_battery = Battery(battery["nominal_voltage"], battery["internal_resistance"])
+        motor_drive_board = MotorDriveBoard()
+
+        buggy_instance = Buggy(
+            left_wheel,
+            right_wheel,
+            buggy["track_width"],
+            buggy["weight"],
+            buggy_battery,
+            motor_drive_board,
+            buggy["friction_coefficient"]
+        )
+
+        buggys.append((name, buggy_instance))
+
+    return buggys
+
+
+
+def select_buggy(buggys):
+    print("Available Buggys:")
+    for i, buggy in enumerate(buggys):
+        print(f"{i + 1}. {buggy[0]}")
+
+    while True:
+        selected = input("Type the buggy name or number to select it: ").strip()
+
+        # Try numeric selection
+        if selected.isdigit():
+            index = int(selected) - 1
+            if 0 <= index < len(buggys):
+                selected_buggy = buggys[index]
+                print("Selected Buggy:", selected_buggy[0])
+                return selected_buggy[1]
+            else:
+                print("Invalid number. Please choose a valid index.")
+
+        # Try name-based selection (case-insensitive)
+        else:
+            for buggy in buggys:
+                if buggy[0].lower() == selected.lower():
+                    print("Selected Buggy:", buggy[0])
+                    return buggy[1]
+
+            print("Not a valid track name. Please choose from the list above.")
