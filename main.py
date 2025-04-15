@@ -36,6 +36,9 @@ sensor_positions = results["sensor_positions"]
 time_steps = results["time_steps"]
 error_values = results["error_values"]
 
+average_wheel_speed = []
+for i in range(len(left_omega)):
+    average_wheel_speed.append((left_omega[i]+right_omega[i])/2)
 # Initialize empty lists for each sensor dynamically
 num_sensors = len(sensor_values[0])  # assume at least one reading exists
 sensor_series = [[] for _ in range(num_sensors)]
@@ -80,6 +83,7 @@ axs[0].legend()
 # Subplot 2: Wheel angular velocities
 axs[1].plot(time, left_omega, label="Left Wheel ω", color='b')
 axs[1].plot(time, right_omega, label="Right Wheel ω", color='r')
+axs[1].plot(time, average_wheel_speed, label="Average Wheel ω", color='g')
 axs[1].set_title("Wheel Angular Velocities Over Time")
 axs[1].set_xlabel("Time (seconds)")
 axs[1].set_ylabel("Angular Velocity (RPM)")
