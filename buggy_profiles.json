@@ -107,7 +107,7 @@
       "armature_resistance": 1.8,
       "brush_voltage": 0.23,
       "torque_constant": 0.0085,
-      "emf_constant": 0.0095,
+      "emf_constant": 0.0091,
       "motor_max_current": 1.35,
       "motor_inertia": 0.0
     },
@@ -123,16 +123,29 @@
     "buggy": {
       "weight": 1.2,
       "track_width": 0.22,
-      "friction_coefficient": "",
-      "buggy_innertia": ""
+      "friction_coefficient": 0.085,
+      "buggy_innertia": 0.0012
     },
     "battery": {
-      "nominal_voltage": "",
-      "internal_resistance": ""
+      "nominal_voltage": 10.0,
+      "internal_resistance": 0.8
     },
     "sensor_array": {
-      "sensor_count": "",
-      "sensor_coordinates": []
+      "sensor_count": 3.0,
+      "sensor_coordinates": [
+        [
+          0.1,
+          -0.05
+        ],
+        [
+          0.1,
+          0.0
+        ],
+        [
+          0.1,
+          0.05
+        ]
+      ]
     }
   }
 }

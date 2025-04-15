@@ -23,9 +23,9 @@ class Buggy:
                  innertia):
         
         self.left_wheel = left_wheel
-        self.left_wheel_position = np.array([0.0,-0.10]) #x,y coords
+        self.left_wheel_position = np.array([0.0,-track_width/2]) #x,y coords
         self.right_wheel = right_wheel
-        self.right_wheel_position = np.array([0.0,0.10]) #x,y coords
+        self.right_wheel_position = np.array([0.0,track_width/2]) #x,y coords
         self.track_width = abs(np.linalg.norm(self.left_wheel_position - self.right_wheel_position))
         self.mass = mass
         self.battery = battery
