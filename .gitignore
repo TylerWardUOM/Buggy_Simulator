@@ -5,3 +5,5 @@
 /simulation/Buggy/Sensors/__pycache__
 /simulation/Buggy/Wheel/__pycache__
 /simulation/Track/__pycache__
+/visulization/__pycache__
+/control/__pycache__
