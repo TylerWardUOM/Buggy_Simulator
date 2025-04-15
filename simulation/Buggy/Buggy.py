@@ -22,9 +22,9 @@ class Buggy:
                  sensor_array: SensorArray):
         
         self.left_wheel = left_wheel
-        self.left_wheel_position = np.array([0.0,-10]) #x,y coords
+        self.left_wheel_position = np.array([0.0,-0.10]) #x,y coords
         self.right_wheel = right_wheel
-        self.right_wheel_position = np.array([0.0,10]) #x,y coords
+        self.right_wheel_position = np.array([0.0,0.10]) #x,y coords
         self.track_width = abs(np.linalg.norm(self.left_wheel_position - self.right_wheel_position))
         self.mass = mass
         self.battery = battery
@@ -36,6 +36,9 @@ class Buggy:
         self.position = np.array([0.0,0.0])
         self.velocity = np.array([0.0,0.0])         # Linear velocity (m/s)
         self.angular_velocity = 0.0 # Angular velocity (rad/s)
+
+        self.local_position = np.array([0.0,0.0])
+        self.local_velocity = np.array([0.0,0.0])         # Linear velocity (m/s)
 
     def reset(self):
         self.velocity = np.array([0.0,0.0])         # Linear velocity (m/s)
@@ -65,6 +68,10 @@ class Buggy:
         if duty_right!=None:
             self.motor_drive_board.set_duty_right(duty_right)
 
+    def transform_acceleration_to_world_frame(self,acceleration):
+        r = rotation_matrix(self.orientation)
+        return r @ acceleration
+
     def update(self, slope_angle, dt):
         """
         Update the buggy state for the time increment dt.
@@ -89,26 +96,39 @@ class Buggy:
         force_left = self.left_wheel.get_drive_force(voltage_left,normal_force_wheel)
         force_right = self.right_wheel.get_drive_force(voltage_right,normal_force_wheel)
         # Total forward force from both wheels
-        force_motor_total = (force_left + force_right)
+        if force_left>force_right:
+            force_motor_total=2*force_right
+        elif force_right>force_left:
+            force_motor_total=2*force_left
+        else:
+            force_motor_total = (force_left + force_right)
         # Net force: motor force reduced by the gravitational force along the slope.
         force_net = np.array([force_motor_total,0])+resitive_forces
         acceleration_net = force_net / self.mass  # Linear acceleration (m/s^2)
-        acceleration_net[1] = 0
+        acceleration_net[1] = 0 #Only Move along wheel direction (Local X axis)
+
+
         #Torque
         # Approximate moment of inertia for yaw (using a point mass model) 
         intertia_buggy = self.mass * (self.track_width / 2)**2
+        #intertia_buggy = 0.0014
                 # Yaw torque: difference in forces multiplied by track width (lever arm)
         torque_buggy = (force_right - force_left) * self.track_width
         angular_acceleration_buggy = torque_buggy / intertia_buggy  # Angular acceleration (rad/s^2)
-        # Update velocities
-        self.velocity += acceleration_net * dt
         self.angular_velocity += angular_acceleration_buggy * dt
-        #Update Local Frame Position
-        self.position += self.velocity * dt
         self.orientation += self.angular_velocity * dt
+        # Update velocities
+        self.local_velocity += acceleration_net * dt
+        #Update Local Frame Position
+        self.local_position += self.local_velocity * dt
 
-        left_wheel_velocity = self.velocity[0] + self.angular_velocity * self.left_wheel_position[1]
-        right_wheel_velocity = self.velocity[0] + self.angular_velocity * self.right_wheel_position[1]
+        self.velocity = self.transform_acceleration_to_world_frame(self.local_velocity)
+        # Update velocities
+        #Update world Frame Position
+        self.position += self.velocity * dt
+
+        left_wheel_velocity = self.local_velocity[0] + self.angular_velocity * self.left_wheel_position[1]
+        right_wheel_velocity = self.local_velocity[0] + self.angular_velocity * self.right_wheel_position[1]
 
         #print(f"Torque: {torque_buggy}, Left Force: {force_left}, Right Force: {force_right}")
         #print(f"Left Wheel Velocity: {left_wheel_velocity}, Right Wheel Velocity: {right_wheel_velocity}")
