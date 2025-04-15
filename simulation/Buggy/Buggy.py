@@ -19,7 +19,8 @@ class Buggy:
     def __init__(self, left_wheel: Wheel, right_wheel: Wheel, 
                  track_width, mass, battery: Battery, 
                  motor_drive_board: MotorDriveBoard, friction_coefficient, 
-                 sensor_array: SensorArray):
+                 sensor_array: SensorArray,
+                 innertia):
         
         self.left_wheel = left_wheel
         self.left_wheel_position = np.array([0.0,-0.10]) #x,y coords
@@ -31,6 +32,7 @@ class Buggy:
         self.motor_drive_board = motor_drive_board
         self.friction_coefficient = friction_coefficient
         self.sensor_array = sensor_array
+        self.innertia = innertia
         
         self.orientation = 0.0 #Angle (rad) relative to world frame 
         self.position = np.array([0.0,0.0])
@@ -124,10 +126,9 @@ class Buggy:
         #Torque
         # Approximate moment of inertia for yaw (using a point mass model) 
         #intertia_buggy = self.mass * (self.track_width / 2)**2
-        intertia_buggy = 0.0012
                 # Yaw torque: difference in forces multiplied by track width (lever arm)
         torque_buggy = (force_right - force_left) * self.track_width
-        angular_acceleration_buggy = torque_buggy / intertia_buggy  # Angular acceleration (rad/s^2)
+        angular_acceleration_buggy = torque_buggy / self.innertia  # Angular acceleration (rad/s^2)
         self.angular_velocity += angular_acceleration_buggy * dt
         self.orientation += self.angular_velocity * dt
         # Update velocities
@@ -189,7 +190,8 @@ def load_buggys(filename):
             buggy_battery,
             motor_drive_board,
             buggy["friction_coefficient"],
-            sensor_array
+            sensor_array,
+            buggy["buggy_innertia"]
         )
 
         buggys.append((name, buggy_instance))

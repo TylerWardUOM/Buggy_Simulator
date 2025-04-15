@@ -1,4 +1,5 @@
 import numpy as np
+import random
 import matplotlib.pyplot as plt
 from simulation.Track.Track import *
 from simulation.Buggy.Sensors.SensorArray import SensorArray 
@@ -6,6 +7,8 @@ from simulation.Buggy.Buggy import *
 from visulization.PlotTrack import *
 from control.CalculateError import calculate_error
 from control.BangBang import BangBang
+from simulation.Simulation import simulate_motion
+
 buggy_path = "buggy_profiles.json"
 buggys = load_buggys(buggy_path)
 buggy = select_buggy(buggys)
@@ -14,109 +17,58 @@ tracks=load_tracks(track_path)
 track = select_track(tracks)
 
 
-def simulate_motion(control_func, buggy: Buggy, track: Track, time_steps=10000, dt=0.001):
-    # Simulate the motion over time
-    x_traj, y_traj, theta_traj = [], [], []
-    left_omega, right_omega = [], []
-    left_duty, right_duty = [], []
-    slope_angles = []
-    sensor_values = []
-    error_values=[]
-    sensor_positions=[]
-    position_log = []  # Log of the vehicle's x and y positions
-    lost_count = 0
-    
-    for t in range(time_steps):
-        # Get the updated duty cycle for the left and right wheels
-        sensor_value = buggy.sensor_array.get_readings(buggy.position,buggy.orientation,track)
-        if t%10 == 0:
-            duty_left,duty_right = control_func(sensor_value,buggy.motor_drive_board.duty_left,buggy.motor_drive_board.duty_right)
-            buggy.set_duty(duty_left,duty_right)
-        slope_angle = track.get_slope_angle_at_position(buggy.position.copy())
-        cur_sensor_positions = buggy.sensor_array.get_positions(buggy.position,buggy.orientation)
-        left_duty.append(duty_left)
-        right_duty.append(duty_right)
-        slope_angles.append(slope_angle)
-        sensor_values.append(sensor_value)
-        error_values.append(calculate_error(sensor_value))
-        sensor_positions.append(cur_sensor_positions)
-        
-        # Update the buggy state
-        buggy.set_duty(duty_left,duty_right)
-        #print(slope_angle)
-        buggy.update(slope_angle, dt)
-        
-        # Collect data
-        position_log.append(buggy.position.copy())
-        x_traj.append(buggy.position[0])
-        y_traj.append(buggy.position[1])
-        theta_traj.append(np.rad2deg(buggy.orientation))
-        
-        if buggy.left_wheel.omega < 0:
-            left_omega.append(0)
-        else:
-            left_omega.append((buggy.left_wheel.omega / (2 * np.pi)) * 60)
-
-        if buggy.right_wheel.omega < 0:
-            right_omega.append(0)
-        else:
-            right_omega.append((buggy.right_wheel.omega / (2 * np.pi)) * 60)
-
-        if sum(sensor_value)<0.0001:
-            lost_count+=1
-            if lost_count>=time_steps*0.1:
-                return x_traj, y_traj, theta_traj, left_omega, right_omega, left_duty, right_duty, slope_angles, position_log,sensor_values,t+1, error_values,sensor_positions
-        else:
-            count=0
-    return x_traj, y_traj, theta_traj, left_omega, right_omega, left_duty, right_duty, slope_angles, position_log,sensor_values,t+1,error_values,sensor_positions
-
-
-
-dt = 0.0005
+dt = 0.001
 simulation_time = 10  # s
 time_steps = int(simulation_time / dt)
 
 results = simulate_motion(BangBang, buggy, track,time_steps, dt)
 
-x_traj, y_traj = results[0], results[1]
-theta_traj = results[2]
-left_omega, right_omega = results[3], results[4]
-duty_lefts, duty_rights = results[5], results[6]
-slope_angles = results[7]
-position_log = results[8]
-sensor_values = results[9]
-time_steps = results[10]
-error_values = results[11]
-sensor_positions = results[12]
+# Unpack from dictionary
+orientation_log = results["orientation_log"]
+left_omega = results["left_omega"]
+right_omega = results["right_omega"]
+duty_lefts = results["left_duty"]
+duty_rights = results["right_duty"]
+slope_angles = results["slope_angles"]
+position_log = results["position_log"]
+sensor_values = results["sensor_values"]
+sensor_positions = results["sensor_positions"]
+time_steps = results["time_steps"]
+error_values = results["error_values"]
 
-sensor1,sensor2,sensor3 = [],[],[]
+# Initialize empty lists for each sensor dynamically
+num_sensors = len(sensor_values[0])  # assume at least one reading exists
+sensor_series = [[] for _ in range(num_sensors)]
+sensor_position_series = [[] for _ in range(num_sensors)]
+
+# Fill each sensor's time series
 for values in sensor_values:
-    sensor1.append(values[0])
-    sensor2.append(values[1])
-    sensor3.append(values[2])
+    for i in range(num_sensors):
+        sensor_series[i].append(values[i])
 
 buggy_x,buggy_y =[],[]
 for cords in position_log:
     buggy_x.append(cords[0])
     buggy_y.append(cords[1])
 
-sensor2_x,sensor2_y = [], []
-for sensor in sensor_positions:
-    sensor2_x.append(sensor[1][0])
-    sensor2_y.append(sensor[1][1])
+# Fill each sensor's positional time series
+for values in sensor_positions:
+    for i in range(num_sensors):
+        sensor_position_series[i].append((values[i][0], values[i][1]))
+
     
 print(time_steps)
 time = np.linspace(0, time_steps * dt, time_steps)
 # Plotting the results
 fig, axs = plt.subplots(5, 1, figsize=(10, 8))
-
-# Subplot 1: Vehicle trajectory
-axs[0].plot(buggy_x, buggy_y, label="Vehicle Trajectory")
-axs[0].plot(sensor2_x, sensor2_y, label="sensor Trajectory")
-# Mark time every N seconds
+for i, series in enumerate(sensor_position_series):
+    x_vals = [pos[0] for pos in series]
+    y_vals = [pos[1] for pos in series]
+    color = (random.random(), random.random(), random.random())
+    axs[0].plot(x_vals, y_vals, label=f"Sensor {i+1}", color=color)
 marker_interval = int(1 / dt)  # every 1 second
 for i in range(0, len(buggy_x), marker_interval):
-    axs[0].annotate(f"{i*dt:.0f}s", (buggy_x[i], buggy_y[i]),
+    axs[0].annotate(f"{i*dt:.1f}s", (buggy_x[i], buggy_y[i]),
                     textcoords="offset points", xytext=(5,5), ha='left', fontsize=8,
                     bbox=dict(boxstyle="round,pad=0.2", fc="white", ec="gray", lw=0.5))
 axs[0].set_title("Differential Drive Vehicle Motion")
@@ -151,10 +103,10 @@ axs[3].set_ylabel("Orientation (rad)")
 axs[3].grid(True)
 axs[3].legend()
 
-axs[4].plot(time, sensor1, label="right", color='b')
-axs[4].plot(time, sensor2, label="middle", color='r')
-axs[4].plot(time, sensor3, label="left", color='g')
-axs[4].plot(time, error_values, label="error", color='y')
+for i, series in enumerate(sensor_series):
+    color = (random.random(), random.random(), random.random())
+    axs[4].plot(time, series, label=f"Sensor {i+1}", color=color)
+axs[4].plot(time, error_values, label="error", color='g')
 axs[4].set_title("Sensor Over Time")
 axs[4].set_xlabel("Time (seconds)")
 axs[4].set_ylabel("Sensor (intentisty)")

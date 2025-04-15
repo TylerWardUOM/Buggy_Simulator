@@ -1,79 +1,138 @@
 {
-    "buggy_1": {
-      "name": "Buggy Model 1",
-      "motor": {
-        "armature_resistance": 1.8375,
-        "brush_voltage": 0.2315,
-        "torque_constant": 0.0082,
-        "emf_constant": 0.0081,
-        "motor_max_current": 1.35,
-        "motor_inertia": 0.0
-      },
-      "gearbox": {
-        "gear_ratio": 18.75,
-        "gearbox_efficiency": 0.7224,
-        "gearbox_inertia": 0.0
-      },
-      "wheel": {
-        "wheel_radius": 0.075,
-        "wheel_inertia": 0
-      },
-      "buggy": {
-        "weight": 1.472,
-        "track_width": 0.22,
-        "friction_coefficient": 0.15
-      },
-      "battery": {
-        "nominal_voltage": 10,
-        "internal_resistance": 0.8
-      },
-      "sensor_array": {
-      "sensor_count": 4,
-      "sensor_coordinates": [
-          [0.1, -0.125],
-          [0.1, -0.075],
-          [0.1, 0.0],
-          [0.1, 0.075],
-          [0.1, 0.125]
-      ]
-      }
+  "buggy_1": {
+    "name": "Buggy Model 1",
+    "motor": {
+      "armature_resistance": 1.8375,
+      "brush_voltage": 0.2315,
+      "torque_constant": 0.0082,
+      "emf_constant": 0.0081,
+      "motor_max_current": 1.35,
+      "motor_inertia": 0.0
     },
-    "buggy_2": {
-      "name": "Buggy Model 2",
-      "motor": {
-        "armature_resistance": 1.8375,
-        "brush_voltage": 0.2315,
-        "torque_constant": 0.0082,
-        "emf_constant": 0.0081,
-        "motor_max_current": 1.35,
-        "motor_inertia": 0.0
-      },
-      "gearbox": {
-        "gear_ratio": 18.75,
-        "gearbox_efficiency": 0.7224,
-        "gearbox_inertia": 0.0
-      },
-      "wheel": {
-        "wheel_radius": 0.075,
-        "wheel_inertia": 0
-      },
-      "buggy": {
-        "weight": 1.472,
-        "track_width": 0.22,
-        "friction_coefficient": 0.088
-      },
-      "battery": {
-        "nominal_voltage": 10,
-        "internal_resistance": 0.8
-      },
-        "sensor_array": {
-        "sensor_count": 3,
-        "sensor_coordinates": [
-            [0.1, -0.025],
-            [0.1, 0.0],
-            [0.1, 0.025]
+    "gearbox": {
+      "gear_ratio": 18.75,
+      "gearbox_efficiency": 0.7224,
+      "gearbox_inertia": 0.0
+    },
+    "wheel": {
+      "wheel_radius": 0.075,
+      "wheel_inertia": 0
+    },
+    "buggy": {
+      "weight": 1.472,
+      "track_width": 0.22,
+      "friction_coefficient": 0.15,
+      "buggy_innertia": 0.0014
+    },
+    "battery": {
+      "nominal_voltage": 10,
+      "internal_resistance": 0.8
+    },
+    "sensor_array": {
+      "sensor_count": 5,
+      "sensor_coordinates": [
+        [
+          0.1,
+          -0.125
+        ],
+        [
+          0.1,
+          -0.075
+        ],
+        [
+          0.1,
+          0.0
+        ],
+        [
+          0.1,
+          0.075
+        ],
+        [
+          0.1,
+          0.125
         ]
-        }
+      ]
+    }
+  },
+  "buggy_2": {
+    "name": "Buggy Model 2",
+    "motor": {
+      "armature_resistance": 1.8375,
+      "brush_voltage": 0.2315,
+      "torque_constant": 0.0082,
+      "emf_constant": 0.0081,
+      "motor_max_current": 1.35,
+      "motor_inertia": 0.0
+    },
+    "gearbox": {
+      "gear_ratio": 18.75,
+      "gearbox_efficiency": 0.7224,
+      "gearbox_inertia": 0.0
+    },
+    "wheel": {
+      "wheel_radius": 0.075,
+      "wheel_inertia": 0.0
+    },
+    "buggy": {
+      "weight": 1.472,
+      "track_width": 0.22,
+      "friction_coefficient": 0.088,
+      "buggy_innertia": 0.0012
+    },
+    "battery": {
+      "nominal_voltage": 10.0,
+      "internal_resistance": 0.8
+    },
+    "sensor_array": {
+      "sensor_count": 3.0,
+      "sensor_coordinates": [
+        [
+          0.1,
+          -0.025
+        ],
+        [
+          0.1,
+          0.0
+        ],
+        [
+          0.1,
+          0.025
+        ]
+      ]
+    }
+  },
+  "buggy_3": {
+    "name": "BuggyGUITest",
+    "motor": {
+      "armature_resistance": 1.8,
+      "brush_voltage": 0.23,
+      "torque_constant": 0.0085,
+      "emf_constant": 0.0095,
+      "motor_max_current": 1.35,
+      "motor_inertia": 0.0
+    },
+    "gearbox": {
+      "gear_ratio": 18.75,
+      "gearbox_efficiency": 0.7,
+      "gearbox_inertia": 0.0
+    },
+    "wheel": {
+      "wheel_radius": 0.075,
+      "wheel_inertia": 0.0
+    },
+    "buggy": {
+      "weight": 1.2,
+      "track_width": 0.22,
+      "friction_coefficient": "",
+      "buggy_innertia": ""
+    },
+    "battery": {
+      "nominal_voltage": "",
+      "internal_resistance": ""
+    },
+    "sensor_array": {
+      "sensor_count": "",
+      "sensor_coordinates": []
     }
   }
-  
+}
