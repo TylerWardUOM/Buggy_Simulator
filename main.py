@@ -9,6 +9,8 @@ from control.CalculateError import calculate_error
 from control.BangBang import BangBang
 from simulation.Simulation import simulate_motion
 
+dev=False
+
 buggy_path = "buggy_profiles.json"
 buggys = load_buggys(buggy_path)
 buggy = select_buggy(buggys)
@@ -16,12 +18,31 @@ track_path = "track.json"
 tracks=load_tracks(track_path)
 track = select_track(tracks)
 
-
-dt = 0.001
-simulation_time = 10  # s
+if dev:        
+    dt = 0.001
+    simulation_time = 10  # s
+else:
+    dt=float(input("Enter Simulation Period (s): "))
+    simulation_time=float(input("Enter Simulation Duration: "))
 time_steps = int(simulation_time / dt)
 
 results = simulate_motion(BangBang,0.01, buggy, track,time_steps, dt)
+
+# def convert_to_serializable(obj):
+#     if isinstance(obj, np.ndarray):
+#         return obj.tolist()
+#     if isinstance(obj, (np.float32, np.float64, np.int32, np.int64)):
+#         return obj.item()
+#     if isinstance(obj, dict):
+#         return {k: convert_to_serializable(v) for k, v in obj.items()}
+#     if isinstance(obj, list):
+#         return [convert_to_serializable(i) for i in obj]
+#     return obj
+# serializable_results = convert_to_serializable(results)
+
+# with open("PrevResults.json", "w") as last_results_file:
+#     json.dump(serializable_results, last_results_file, indent=2)
+
 
 # Unpack from dictionary
 orientation_log = results["orientation_log"]
@@ -60,7 +81,6 @@ for values in sensor_positions:
         sensor_position_series[i].append((values[i][0], values[i][1]))
 
     
-print(time_steps)
 time = np.linspace(0, time_steps * dt, time_steps)
 # Plotting the results
 fig, axs = plt.subplots(5, 1, figsize=(10, 8))
@@ -69,7 +89,7 @@ for i, series in enumerate(sensor_position_series):
     y_vals = [pos[1] for pos in series]
     color = (random.random(), random.random(), random.random())
     axs[0].plot(x_vals, y_vals, label=f"Sensor {i+1}", color=color)
-marker_interval = int(1 / dt)  # every 1 second
+marker_interval = int(0.5 / dt)  # every 1 second
 for i in range(0, len(buggy_x), marker_interval):
     axs[0].annotate(f"{i*dt:.1f}s", (buggy_x[i], buggy_y[i]),
                     textcoords="offset points", xytext=(5,5), ha='left', fontsize=8,
@@ -121,4 +141,4 @@ plt.tight_layout()
 plt.show()
 #plot_track(track,True)
 plot_track_with_buggy(track,position_log,True)
-#plot_track_with_buggy_animated(track,position_log,interval=50,show_elevation=True)
+#plot_track_with_buggy_animated(track,position_log,interval=5,show_elevation=True)

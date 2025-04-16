@@ -21,7 +21,7 @@
     "buggy": {
       "weight": 1.472,
       "track_width": 0.22,
-      "friction_coefficient": 0.15,
+      "friction_coefficient": 0.088,
       "buggy_innertia": 0.0014
     },
     "battery": {
