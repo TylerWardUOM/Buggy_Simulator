@@ -17,9 +17,16 @@ class SimulationResult(TypedDict):
     sensor_positions: List[List[Tuple[float, float]]]
     time_steps: int
     error_values: List[float]
+    dt: float
 
 
 def simulate_motion(control_func, control_period, buggy: Buggy, track: Track, time_steps=10000, dt=0.001) -> SimulationResult:
+    if dt <= 0:
+        raise ValueError("Simulation timestep must be positive.")
+    if control_period <= 0:
+        raise ValueError("Control period must be positive.")
+    if time_steps <= 0:
+        raise ValueError("Simulation must contain at least one timestep.")
 
     result = {
         "orientation_log": [],
@@ -33,17 +40,20 @@ def simulate_motion(control_func, control_period, buggy: Buggy, track: Track, ti
         "sensor_positions": [],
         "time_steps": time_steps,
         "error_values": [],
+        "dt": dt,
     }
-    control_count = control_period/dt
-
     lost_count = 0
+    duty_left = buggy.motor_drive_board.duty_left
+    duty_right = buggy.motor_drive_board.duty_right
+    time_since_control = control_period
     
     for t in trange(time_steps, desc="Simulating"):
         sensor_value = buggy.sensor_array.get_readings(buggy.position, buggy.orientation, track)
 
-        if t % control_count == 0:
+        if time_since_control >= control_period:
             duty_left, duty_right = control_func(sensor_value, buggy.motor_drive_board.duty_left, buggy.motor_drive_board.duty_right)
             buggy.set_duty(duty_left, duty_right)
+            time_since_control = 0.0
 
         slope_angle = track.get_slope_angle_at_position(buggy.position.copy())
         cur_sensor_positions = buggy.sensor_array.get_positions(buggy.position, buggy.orientation)
@@ -60,6 +70,7 @@ def simulate_motion(control_func, control_period, buggy: Buggy, track: Track, ti
 
         buggy.set_duty(duty_left, duty_right)
         buggy.update(slope_angle, dt)
+        time_since_control += dt
 
         left_rpm = max((buggy.left_wheel.omega / (2 * np.pi)) * 60, 0)
         right_rpm = max((buggy.right_wheel.omega / (2 * np.pi)) * 60, 0)
@@ -76,4 +87,3 @@ def simulate_motion(control_func, control_period, buggy: Buggy, track: Track, ti
                 break
 
     return result
-

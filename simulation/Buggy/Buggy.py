@@ -21,6 +21,14 @@ class Buggy:
                  motor_drive_board: MotorDriveBoard, friction_coefficient, 
                  sensor_array: SensorArray,
                  innertia):
+        if track_width <= 0:
+            raise ValueError("Track width must be positive.")
+        if mass <= 0:
+            raise ValueError("Buggy mass must be positive.")
+        if innertia <= 0:
+            raise ValueError("Buggy inertia must be positive.")
+        if friction_coefficient < 0:
+            raise ValueError("Friction coefficient cannot be negative.")
         
         self.left_wheel = left_wheel
         self.left_wheel_position = np.array([0.0,-track_width/2]) #x,y coords
@@ -43,11 +51,17 @@ class Buggy:
         self.local_velocity = np.array([0.0,0.0])         # Linear velocity (m/s)
 
     def reset(self):
+        self.position = np.array([0.0, 0.0])
+        self.local_position = np.array([0.0, 0.0])
         self.velocity = np.array([0.0,0.0])         # Linear velocity (m/s)
+        self.local_velocity = np.array([0.0, 0.0])
         self.angular_velocity = 0.0 # Angular velocity (rad/s)
         self.orientation = 0.0 #Angle (rad) relative to world frame 
         self.left_wheel.reset()
         self.right_wheel.reset()
+        self.motor_drive_board.set_duty_left(0.0)
+        self.motor_drive_board.set_duty_right(0.0)
+        self.battery.reset()
 
     def calculate_gravity_force(self, slope_angle):
         world_gravity = np.array([self.mass * 9.81 * np.sin(np.deg2rad(slope_angle)),0])
@@ -168,16 +182,28 @@ def load_buggys(filename):
             motor["motor_max_current"],
             motor["motor_inertia"]
         )
-        right_motor = left_motor  # Share the same motor instance (or create new if needed)
+        right_motor = Motor(
+            motor["armature_resistance"],
+            motor["brush_voltage"],
+            motor["torque_constant"],
+            motor["emf_constant"],
+            motor["motor_max_current"],
+            motor["motor_inertia"]
+        )
 
-        gearbox = Gearbox(
+        left_gearbox = Gearbox(
+            gearbox_data["gear_ratio"],
+            gearbox_data["gearbox_inertia"],
+            gearbox_data["gearbox_efficiency"]
+        )
+        right_gearbox = Gearbox(
             gearbox_data["gear_ratio"],
             gearbox_data["gearbox_inertia"],
             gearbox_data["gearbox_efficiency"]
         )
 
-        left_wheel = Wheel(left_motor, gearbox, wheel["wheel_radius"], wheel["wheel_inertia"])
-        right_wheel = Wheel(right_motor, gearbox, wheel["wheel_radius"], wheel["wheel_inertia"])
+        left_wheel = Wheel(left_motor, left_gearbox, wheel["wheel_radius"], wheel["wheel_inertia"])
+        right_wheel = Wheel(right_motor, right_gearbox, wheel["wheel_radius"], wheel["wheel_inertia"])
 
         buggy_battery = Battery(battery["nominal_voltage"], battery["internal_resistance"])
         motor_drive_board = MotorDriveBoard()

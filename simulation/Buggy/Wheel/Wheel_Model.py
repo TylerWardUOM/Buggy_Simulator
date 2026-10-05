@@ -19,6 +19,7 @@ class Wheel:
     def reset(self):
         """Reset the wheel's angular velocity to zero."""
         self.omega = 0.0
+        self.motor.reset()
 
     def compute_motor_torque(self, voltage):
         """

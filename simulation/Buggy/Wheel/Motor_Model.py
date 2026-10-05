@@ -26,3 +26,6 @@ class Motor:
     def get_torque(self, voltage, omega):
         current = self.calculate_current(voltage, omega)
         return self.torque_constant * current
+
+    def reset(self):
+        self.current = 0.0

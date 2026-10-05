@@ -1,79 +1,59 @@
-# 🚀 Line-Following Buggy Simulator
+# Line-Following Buggy Simulator
 
-## 📌 Project Overview
-This project is a **realistic simulator** for testing line-following buggies using **real-world physics** and **sensor models**. Teams can use this simulator to develop and test their **C++ control algorithms** before running them on actual hardware.
+This project is a Python simulator for testing line-following buggy designs.
+It models a differential-drive buggy, motors, gearboxes, wheels, battery,
+track elevation, line sensors, and a controller.
 
-### 🔥 **Key Features**
-✅ **Accurate Buggy Motion Simulation** – Models acceleration, braking, drift, and ground friction.  
-✅ **Realistic IR Sensor Simulation** – Detects track lines with sensor delay & noise.  
-✅ **C++ Control Algorithm Compatibility** – Run real buggy code inside the simulator.  
-✅ **Buggy Profile Loader** – Use real-world test data to match actual buggy performance.  
-✅ **2D Visualization & Track Editor** – Watch the buggy follow a track in real-time.  
+## Installation
 
----
+Install the Python dependencies:
 
-## 📦 **Installation**
-### **1️⃣ Install Dependencies**
-Ensure you have Python & necessary libraries:
 ```bash
-pip install numpy matplotlib pybind11
+python3 -m pip install numpy matplotlib tqdm
 ```
-If using C++ control integration:
-```bash
-sudo apt install g++   # (Linux)
-```
-``` bash
-brew install gcc       # (Mac)
-```
-2️⃣ Clone the Repository
-```bash
-git clone https://github.com/TylerWardUOM/Buggy_Simulator
-cd buggy-simulator
-```
-🚀 Getting Started
-Running the Simulation
-To test a basic buggy motion simulation, run:
-``` bash
-python simulator.py --track sample_track.json
-```
-To run a C++ control algorithm inside the simulator, use:
-``` bash
-python simulator.py --control team_algorithm.so
-```
-🔧 Project Structure
-``` bash
-/buggy-simulator
-├── /simulation        # Physics engine & sensors
-├── /control           # C++ integration & control interface
-├── /tests             # Characterization test scripts
-├── /visualization     # 2D UI & track editor
-├── simulator.py       # Main simulation entry point
-├── buggy_profiles.json # Test results for different buggies
-├── README.md          # Project documentation
-```
-📜 How It Works
-1️⃣ Define Your Buggy Profile
-Before running the simulator, teams should run characterization tests on their real buggy and save the results in buggy_profiles.json.
-Example:
-```json
-{
-    "Left_Motor_Constant": 0.8,
-    "Right_Motor_Constant": 0.82,
-    "Drift_Correction_Factor": 0.03,
-    "Battery_Voltage": 12.0,
-    "Ground_Friction_Coefficient": 0.05
-}
-```
-2️⃣ Implement a Control Algorithm
-Teams write a control.cpp file that processes sensor readings and outputs motor commands:
-```cpp
-float left_motor_power, right_motor_power;
-void update(float error, float sensor_values[]) {
-    left_motor_power = 0.5 - error * 0.1;
-    right_motor_power = 0.5 + error * 0.1;
-}
-```
-Compile it to a shared library (team_algorithm.so) and load it into the simulator.
 
-🛠 Contributing
-👩‍💻 Want to help? Check out our GitHub issues and open a pull request!
+## Running a simulation
+
+From the repository root:
+
+```bash
+python3 main.py
+```
+
+The program asks you to select a buggy profile and track, then asks for the
+simulation timestep and duration. It runs the simulation and displays
+diagnostic plots followed by the buggy trajectory over the track.
+
+Buggy profiles are stored in [`buggy_profiles.json`](./buggy_profiles.json)
+and tracks are stored in [`track.json`](./track.json). The profile editor can
+be started with:
+
+```bash
+python3 visulization/buggy_gui.py
+```
+
+## Project structure
+
+```text
+simulation/       Physics, buggy, wheel, power, sensor, and track models
+control/          Line-following controllers
+visulization/     Simulation and track plots plus the profile editor
+tests/            Characterization and simulator verification tests
+main.py           Interactive entry point
+buggy_profiles.json
+track.json
+```
+
+The simulation engine is callable without the interactive interface through
+`simulation.Simulation.simulate_motion`. This allows controllers and tests to
+run repeatable simulations directly from Python.
+
+## Two types of tests
+
+**Buggy characterization tests** measure a real buggy's behaviour, such as
+motor speed, acceleration, battery voltage, and turning response. Their
+results are used to tune a profile in `buggy_profiles.json`.
+
+**Simulator verification tests** check that the Python implementation behaves
+correctly. These cover the motor, wheel, battery, track, sensors, controllers,
+and short end-to-end simulations. They do not classify a real buggy.
