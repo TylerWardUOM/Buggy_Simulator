@@ -22,13 +22,44 @@ class BuggyEditor:
         self.root.title("Buggy Profile Editor")
         self.buggies = load_buggies()
         self.current_buggy_key = None
+        self.buggy_keys = []
 
         self.buggy_listbox = tk.Listbox(root, width=30)
         self.buggy_listbox.pack(side=tk.LEFT, fill=tk.Y)
         self.buggy_listbox.bind("<<ListboxSelect>>", self.load_buggy_fields)
 
-        self.form_frame = tk.Frame(root)
-        self.form_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        form_container = tk.Frame(root)
+        form_container.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        self.form_canvas = tk.Canvas(form_container, highlightthickness=0)
+        form_scrollbar = tk.Scrollbar(
+            form_container,
+            orient=tk.VERTICAL,
+            command=self.form_canvas.yview,
+        )
+        self.form_canvas.configure(yscrollcommand=form_scrollbar.set)
+        form_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.form_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+        self.form_frame = tk.Frame(self.form_canvas)
+        form_window = self.form_canvas.create_window(
+            (0, 0),
+            window=self.form_frame,
+            anchor="nw",
+        )
+        self.form_frame.bind(
+            "<Configure>",
+            lambda event: self.form_canvas.configure(
+                scrollregion=self.form_canvas.bbox("all")
+            ),
+        )
+        self.form_canvas.bind(
+            "<Configure>",
+            lambda event: self.form_canvas.itemconfigure(
+                form_window,
+                width=event.width,
+            ),
+        )
 
         self.form_widgets = {}
         self.build_form()
@@ -93,14 +124,16 @@ class BuggyEditor:
 
     def refresh_buggy_list(self):
         self.buggy_listbox.delete(0, tk.END)
-        for key in self.buggies.keys():
-            self.buggy_listbox.insert(tk.END, key)
+        self.buggy_keys = list(self.buggies.keys())
+        for key in self.buggy_keys:
+            display_name = self.buggies[key].get("name", "").strip() or key
+            self.buggy_listbox.insert(tk.END, display_name)
 
     def load_buggy_fields(self, event=None):
         if not self.buggy_listbox.curselection():
             return
         index = self.buggy_listbox.curselection()[0]
-        key = list(self.buggies.keys())[index]
+        key = self.buggy_keys[index]
         self.current_buggy_key = key
         data = self.buggies[key]
 

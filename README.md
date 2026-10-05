@@ -156,6 +156,9 @@ real buggy parameters and failure rates:
 2. **Sensor noise and dropout**
    Add per-sensor noise, bias, gain differences, saturation, response delay,
    and temporary loss of readings.
+   Different students may use different IR sensor hardware, so sensor models
+   should also support configurable sensing range, response curve, and
+   responses to different line or track surfaces.
 3. **Motor-command variation**
    Model duty-cycle deadband, command delay, PWM variation, and differences
    between requested and delivered motor power.
@@ -173,6 +176,8 @@ real buggy parameters and failure rates:
 
 These behaviours should be configurable and use an optional random seed so
 that realistic variable runs can be reproduced during testing. And any other key battery simulations.
+The current sensor model still uses the same idealised line-intensity
+calculation for every sensor.
 
 ## Future track representations
 
@@ -184,6 +189,22 @@ Add an optional smoothed-track mode in the future, using a spline or Bézier
 representation for comparison with the measured polyline. Smoothing must be
 configurable and should not replace the measured track by default, because it
 can change corner geometry, track length, and slope behaviour. And any other key battery simulations.
+
+## Future profile-editor visualisation
+
+Improve the buggy profile editor with a diagram of the buggy's local
+coordinate frame. The diagram should show sensor positions relative to the
+body and allow their layout to be edited visually.
+
+Reuse the same diagram to show wheel positions, track width, and other
+relevant buggy geometry. This should make the relationship between numerical
+profile values and the physical buggy easier to understand and reduce
+configuration mistakes.
+
+Sensor height should also be part of the buggy geometry and profile. The
+simulator should account for the height of the IR sensors above the track,
+especially when modelling slopes, sensor range, and the physical sensor
+layout.
 
 ## Future elevation profiles
 
