@@ -184,3 +184,18 @@ Add an optional smoothed-track mode in the future, using a spline or Bézier
 representation for comparison with the measured polyline. Smoothing must be
 configurable and should not replace the measured track by default, because it
 can change corner geometry, track length, and slope behaviour. And any other key battery simulations.
+
+## Future elevation profiles
+
+The current slope is calculated from discrete track-point elevations, so the
+reported slope angle can change in steps. Improve this in the future by
+defining the vertical profile separately from the horizontal tape path:
+
+```text
+flat section -> ramp up -> approximately constant incline -> ramp down -> flat
+```
+
+The simulator should support explicit ramp, incline, and flattening sections
+based on distance along the track. This should preserve the measured X/Y
+polyline while allowing the elevation profile to better represent the real
+course. And any other key battery simulations.
