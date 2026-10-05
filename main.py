@@ -2,6 +2,7 @@ from simulation.Buggy.Buggy import load_buggys, select_buggy
 from simulation.Simulation import simulate_motion
 from simulation.Track.Track import load_tracks, select_track
 from control.BangBang import BangBang
+from control.CalculateError import calculate_error
 from visulization.SimulationPlots import plot_simulation_results
 
 
@@ -26,6 +27,7 @@ def run_interactive():
         track=track,
         time_steps=time_steps,
         dt=dt,
+        error_function=calculate_error,
     )
     plot_simulation_results(results, track)
 

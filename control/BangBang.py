@@ -1,10 +1,13 @@
-from simulation.Buggy.Buggy import Buggy
+from simulation.Simulation import ControllerState
 from .CalculateError import calculate_error
-def BangBang(sensor_values,prev_left,prev_right):
-    error=calculate_error(sensor_values)
+
+
+def BangBang(state: ControllerState) -> tuple[float, float]:
+    """Run bang-bang control using the default sensor error calculation."""
+    error = calculate_error(state.sensor_values)
     if error == 9:
-        duty_left=prev_left
-        duty_right=prev_right
+        duty_left = state.previous_left_duty
+        duty_right = state.previous_right_duty
     elif error>0:
         duty_left = 0.5
         duty_right = 0.7

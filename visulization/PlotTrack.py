@@ -25,6 +25,7 @@ def plot_track(track: Track, show_elevation: bool = False):
 
         lc = LineCollection(segments, cmap='viridis', array=z_avg, linewidths=2)
         plt.gca().add_collection(lc)
+        plt.gca().autoscale_view()
         plt.colorbar(lc, label='Elevation (m)')
     else:
         plt.plot(x, y, 'b-', linewidth=2, label='Track Path')
@@ -59,6 +60,7 @@ def plot_track_with_buggy(track: Track, buggy_positions, show_elevation: bool = 
         z_avg = (z[:-1] + z[1:]) / 2
         lc = LineCollection(segments, cmap='viridis', array=z_avg, linewidths=2)
         plt.gca().add_collection(lc)
+        plt.gca().autoscale_view()
         plt.colorbar(lc, label='Elevation (m)')
     else:
         plt.plot(x, y, 'b-', linewidth=2, label='Track Path')
