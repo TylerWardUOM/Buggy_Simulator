@@ -51,7 +51,7 @@ def plot_track_with_buggy(track: Track, buggy_positions, show_elevation: bool = 
     track_points = track.path_points
     x, y = track_points[:, 0], track_points[:, 1]
 
-    plt.figure(figsize=(10, 8))
+    fig, ax = plt.subplots(figsize=(10, 8))
 
     # Plot the track
     if show_elevation and track_points.shape[1] >= 3:
@@ -59,25 +59,34 @@ def plot_track_with_buggy(track: Track, buggy_positions, show_elevation: bool = 
         z = track_points[:, 2]
         z_avg = (z[:-1] + z[1:]) / 2
         lc = LineCollection(segments, cmap='viridis', array=z_avg, linewidths=2)
-        plt.gca().add_collection(lc)
-        plt.gca().autoscale_view()
-        plt.colorbar(lc, label='Elevation (m)')
+        ax.add_collection(lc)
+        ax.plot(x, y, color='blue', linewidth=1, alpha=0.35, label='Track Path')
+        fig.colorbar(lc, ax=ax, label='Elevation (m)')
     else:
-        plt.plot(x, y, 'b-', linewidth=2, label='Track Path')
+        ax.plot(x, y, 'b-', linewidth=2, label='Track Path')
 
     # Plot buggy positions
     buggy_positions = np.array(buggy_positions)
-    plt.plot(buggy_positions[:, 0], buggy_positions[:, 1], 'r.-', label='Buggy Path')
-    plt.scatter(buggy_positions[0, 0], buggy_positions[0, 1], color='green', s=50, label='Start')
-    plt.scatter(buggy_positions[-1, 0], buggy_positions[-1, 1], color='black', s=50, label='End')
+    ax.plot(
+        buggy_positions[:, 0],
+        buggy_positions[:, 1],
+        'r-',
+        alpha=0.45,
+        label='Buggy Path',
+    )
+    ax.scatter(buggy_positions[0, 0], buggy_positions[0, 1], color='green', s=50, label='Start')
+    ax.scatter(buggy_positions[-1, 0], buggy_positions[-1, 1], color='black', s=50, label='End')
 
-    plt.title(f"Track with Buggy Trajectory: {track.name}")
-    plt.xlabel("X (m)")
-    plt.ylabel("Y (m)")
-    plt.axis('equal')
-    plt.grid(True)
-    plt.legend()
-    plt.tight_layout()
+    all_positions = np.vstack((track_points[:, :2], buggy_positions[:, :2]))
+    ax.set_xlim(all_positions[:, 0].min(), all_positions[:, 0].max())
+    ax.set_ylim(all_positions[:, 1].min(), all_positions[:, 1].max())
+    ax.set_title(f"Track with Buggy Trajectory: {track.name}")
+    ax.set_xlabel("X (m)")
+    ax.set_ylabel("Y (m)")
+    ax.set_aspect('equal', adjustable='box')
+    ax.grid(True)
+    ax.legend()
+    fig.tight_layout()
     plt.show()
 
 

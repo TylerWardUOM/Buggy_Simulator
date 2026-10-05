@@ -20,9 +20,26 @@ From the repository root:
 python3 main.py
 ```
 
-The program asks you to select a buggy profile and track, then asks for the
-simulation timestep and duration. It runs the simulation and displays
-diagnostic plots followed by the buggy trajectory over the track.
+Without options, the program asks you to select a buggy profile and track,
+then asks for the simulation timestep and duration. You can also provide
+these values on startup:
+
+```bash
+python3 main.py --buggy 1 --track 3 --dt 0.001 --duration 10
+```
+
+The available options are:
+
+```text
+--buggy           Buggy number or name
+--track           Track number or name
+--dt              Simulation timestep in seconds
+--duration        Simulation duration in seconds
+--control-period  Controller update period in seconds (default: 0.01)
+```
+
+The program runs the simulation and displays diagnostic plots followed by the
+buggy trajectory over the track.
 
 Buggy profiles are stored in [`buggy_profiles.json`](./buggy_profiles.json)
 and tracks are stored in [`track.json`](./track.json). The profile editor can
@@ -156,3 +173,14 @@ real buggy parameters and failure rates:
 
 These behaviours should be configurable and use an optional random seed so
 that realistic variable runs can be reproduced during testing. And any other key battery simulations.
+
+## Future track representations
+
+The current tracks are represented as measured points joined by straight
+segments. This should remain available for reproducing tape-based tracks,
+including sharp or uneven corners.
+
+Add an optional smoothed-track mode in the future, using a spline or Bézier
+representation for comparison with the measured polyline. Smoothing must be
+configurable and should not replace the measured track by default, because it
+can change corner geometry, track length, and slope behaviour. And any other key battery simulations.
