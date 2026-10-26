@@ -124,13 +124,8 @@ class Buggy:
         #self.right_wheel.update_dynamics(voltage_right,normal_force_wheel,dt)
         force_left = self.left_wheel.get_drive_force(voltage_left,normal_force_wheel)
         force_right = self.right_wheel.get_drive_force(voltage_right,normal_force_wheel)
-        # Total forward force from both wheels
-        if force_left>force_right:
-            force_motor_total=2*force_right
-        elif force_right>force_left:
-            force_motor_total=2*force_left
-        else:
-            force_motor_total = (force_left + force_right)
+        # Each wheel contributes independently to the local forward force.
+        force_motor_total = force_left + force_right
         # Net force: motor force reduced by the gravitational force along the slope.
         force_net = np.array([force_motor_total,0])+resitive_forces
         acceleration_net = force_net / self.mass  # Linear acceleration (m/s^2)
@@ -174,21 +169,32 @@ def load_buggys(filename):
         sensor_coords = [np.array(coord) for coord in sensors.get("sensor_coordinates", [])]
         sensor_array = SensorArray(sensor_coords)
 
+        default_motor_data = (
+            motor
+            or info.get("left_motor")
+            or info.get("right_motor")
+        )
+        if default_motor_data is None:
+            raise ValueError(f"Buggy profile '{buggy_id}' does not define motor data.")
+
+        left_motor_data = info.get("left_motor", default_motor_data)
+        right_motor_data = info.get("right_motor", default_motor_data)
+
         left_motor = Motor(
-            motor["armature_resistance"],
-            motor["brush_voltage"],
-            motor["torque_constant"],
-            motor["emf_constant"],
-            motor["motor_max_current"],
-            motor["motor_inertia"]
+            left_motor_data["armature_resistance"],
+            left_motor_data["brush_voltage"],
+            left_motor_data["torque_constant"],
+            left_motor_data["emf_constant"],
+            left_motor_data["motor_max_current"],
+            left_motor_data["motor_inertia"]
         )
         right_motor = Motor(
-            motor["armature_resistance"],
-            motor["brush_voltage"],
-            motor["torque_constant"],
-            motor["emf_constant"],
-            motor["motor_max_current"],
-            motor["motor_inertia"]
+            right_motor_data["armature_resistance"],
+            right_motor_data["brush_voltage"],
+            right_motor_data["torque_constant"],
+            right_motor_data["emf_constant"],
+            right_motor_data["motor_max_current"],
+            right_motor_data["motor_inertia"]
         )
 
         left_gearbox = Gearbox(

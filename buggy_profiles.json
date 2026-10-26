@@ -16,7 +16,7 @@
     },
     "wheel": {
       "wheel_radius": 0.075,
-      "wheel_inertia": 0
+      "wheel_inertia": 0.0
     },
     "buggy": {
       "weight": 1.472,
@@ -25,11 +25,11 @@
       "buggy_innertia": 0.0014
     },
     "battery": {
-      "nominal_voltage": 10,
+      "nominal_voltage": 10.0,
       "internal_resistance": 0.8
     },
     "sensor_array": {
-      "sensor_count": 5,
+      "sensor_count": 5.0,
       "sensor_coordinates": [
         [
           0.1,
@@ -144,6 +144,69 @@
         [
           0.1,
           0.05
+        ]
+      ]
+    }
+  },
+  "buggy_4": {
+    "name": "Buggy Model 1 - Right Motor Lower Torque",
+    "left_motor": {
+      "armature_resistance": 1.8375,
+      "brush_voltage": 0.2315,
+      "torque_constant": 0.0082,
+      "emf_constant": 0.0081,
+      "motor_max_current": 1.35,
+      "motor_inertia": 0.0
+    },
+    "right_motor": {
+      "armature_resistance": 1.8375,
+      "brush_voltage": 0.2315,
+      "torque_constant": 0.0078,
+      "emf_constant": 0.0081,
+      "motor_max_current": 1.35,
+      "motor_inertia": 0.0
+    },
+    "gearbox": {
+      "gear_ratio": 18.75,
+      "gearbox_efficiency": 0.7224,
+      "gearbox_inertia": 0.0
+    },
+    "wheel": {
+      "wheel_radius": 0.075,
+      "wheel_inertia": 0
+    },
+    "buggy": {
+      "weight": 1.472,
+      "track_width": 0.22,
+      "friction_coefficient": 0.088,
+      "buggy_innertia": 0.0014
+    },
+    "battery": {
+      "nominal_voltage": 10,
+      "internal_resistance": 0.8
+    },
+    "sensor_array": {
+      "sensor_count": 5,
+      "sensor_coordinates": [
+        [
+          0.1,
+          -0.125
+        ],
+        [
+          0.1,
+          -0.075
+        ],
+        [
+          0.1,
+          0.0
+        ],
+        [
+          0.1,
+          0.075
+        ],
+        [
+          0.1,
+          0.125
         ]
       ]
     }

@@ -68,6 +68,72 @@ be started with:
 python3 visulization/buggy_gui.py
 ```
 
+### Buggy profile JSON format
+
+Each entry in `buggy_profiles.json` is a named buggy profile. The profile
+contains the motor, gearbox, wheel, vehicle, battery, and sensor parameters
+used to construct a `Buggy` object.
+
+The usual motor format defines one shared motor configuration for both wheels:
+
+```json
+{
+  "name": "Example buggy",
+  "motor": {
+    "armature_resistance": 1.8375,
+    "brush_voltage": 0.2315,
+    "torque_constant": 0.0082,
+    "emf_constant": 0.0081,
+    "motor_max_current": 1.35,
+    "motor_inertia": 0.0
+  }
+}
+```
+
+If the left and right motors are different, use complete `left_motor` and
+`right_motor` sections instead of `motor`:
+
+```json
+{
+  "left_motor": {
+    "armature_resistance": 1.8375,
+    "brush_voltage": 0.2315,
+    "torque_constant": 0.0082,
+    "emf_constant": 0.0081,
+    "motor_max_current": 1.35,
+    "motor_inertia": 0.0
+  },
+  "right_motor": {
+    "armature_resistance": 1.8375,
+    "brush_voltage": 0.2315,
+    "torque_constant": 0.0078,
+    "emf_constant": 0.0081,
+    "motor_max_current": 1.35,
+    "motor_inertia": 0.0
+  }
+}
+```
+
+It is also valid to provide only one complete side-specific section, such as
+`left_motor`. The supplied configuration is then used for both wheels. The
+same applies when only `right_motor` is supplied. Do not mix a shared `motor`
+section with a side-specific section; use either the shared form, one
+side-specific form, or both side-specific forms.
+
+The remaining sections have these shapes:
+
+```text
+gearbox: gear_ratio, gearbox_efficiency, gearbox_inertia
+wheel: wheel_radius, wheel_inertia
+buggy: weight, track_width, friction_coefficient, buggy_innertia
+battery: nominal_voltage, internal_resistance
+sensor_array: sensor_count, sensor_coordinates [[x, y], ...]
+```
+
+The GUI supports all four motor configurations: shared, left motor only,
+right motor only, and independent left/right motors. Direct edits should use
+the same field names and complete motor sections shown above.
+
 ## Project structure
 
 ```text

@@ -75,11 +75,45 @@ class BuggyEditor:
 
     def build_form(self):
         sections = [
-            "motor", "gearbox", "wheel", "buggy", "battery", "sensor_array"
+            "gearbox", "wheel", "buggy", "battery", "sensor_array"
         ]
         self.name_entry = self.create_labeled_entry(self.form_frame, "Name")
 
         self.section_vars = {}
+        self.motor_sections = {}
+        self.motor_section_frames = {}
+        motor_label = tk.Label(
+            self.form_frame,
+            text="MOTOR CONFIGURATION",
+            font=("Arial", 10, "bold"),
+        )
+        motor_label.pack(pady=5)
+        self.motor_mode = tk.StringVar(value="shared")
+        motor_modes = [
+            ("Shared motor (both wheels)", "shared"),
+            ("Left motor only (copied to right)", "left_only"),
+            ("Right motor only (copied to left)", "right_only"),
+            ("Independent left and right motors", "independent"),
+        ]
+        for label, value in motor_modes:
+            tk.Radiobutton(
+                self.form_frame,
+                text=label,
+                variable=self.motor_mode,
+                value=value,
+                command=self.update_motor_field_visibility,
+            ).pack(anchor="w", padx=5)
+        for section, title in (
+            ("motor", "Shared motor"),
+            ("left_motor", "Left motor"),
+            ("right_motor", "Right motor"),
+        ):
+            section_frame = tk.Frame(self.form_frame)
+            section_frame.pack(fill=tk.X)
+            tk.Label(section_frame, text=title).pack(anchor="w", pady=(5, 0))
+            self.motor_section_frames[section] = section_frame
+            self.motor_sections[section] = self.create_motor_fields(section_frame)
+
         for section in sections:
             label = tk.Label(self.form_frame, text=f"{section.upper()}", font=("Arial", 10, "bold"))
             label.pack(pady=5)
@@ -95,10 +129,6 @@ class BuggyEditor:
                 coords_text.pack()
                 section_dict["sensor_coordinates"] = coords_text
             else:
-                if section == "motor":
-                    for field in ["armature_resistance", "brush_voltage", "torque_constant", "emf_constant", "motor_max_current", "motor_inertia"]:
-                        section_dict[field] = self.create_labeled_entry(self.form_frame, f"{section}_{field}")
-                # Add custom fields
                 if section == "gearbox":
                     for field in ["gear_ratio", "gearbox_efficiency", "gearbox_inertia"]:
                         section_dict[field] = self.create_labeled_entry(self.form_frame, f"{section}_{field}")
@@ -112,6 +142,36 @@ class BuggyEditor:
                     for field in ["nominal_voltage", "internal_resistance"]:
                         section_dict[field] = self.create_labeled_entry(self.form_frame, f"{section}_{field}")
             self.section_vars[section] = section_dict
+        self.update_motor_field_visibility()
+
+    def create_motor_fields(self, parent):
+        fields = {}
+        for field in [
+            "armature_resistance",
+            "brush_voltage",
+            "torque_constant",
+            "emf_constant",
+            "motor_max_current",
+            "motor_inertia",
+        ]:
+            fields[field] = self.create_labeled_entry(
+                parent,
+                f"{field}",
+            )
+        return fields
+
+    def update_motor_field_visibility(self):
+        mode = self.motor_mode.get()
+        visible_sections = {
+            "shared": {"motor"},
+            "left_only": {"left_motor"},
+            "right_only": {"right_motor"},
+            "independent": {"left_motor", "right_motor"},
+        }[mode]
+        for section, frame in self.motor_section_frames.items():
+            frame.pack_forget()
+            if section in visible_sections:
+                frame.pack(fill=tk.X)
 
     def create_labeled_entry(self, parent, label_text):
         frame = tk.Frame(parent)
@@ -140,6 +200,22 @@ class BuggyEditor:
         self.name_entry.delete(0, tk.END)
         self.name_entry.insert(0, data.get("name", ""))
 
+        if "left_motor" in data and "right_motor" in data:
+            motor_mode = "independent"
+        elif "left_motor" in data:
+            motor_mode = "left_only"
+        elif "right_motor" in data:
+            motor_mode = "right_only"
+        else:
+            motor_mode = "shared"
+        self.motor_mode.set(motor_mode)
+        for section, fields in self.motor_sections.items():
+            section_data = data.get(section, {})
+            for field, widget in fields.items():
+                widget.delete(0, tk.END)
+                widget.insert(0, str(section_data.get(field, "")))
+        self.update_motor_field_visibility()
+
         for section, fields in self.section_vars.items():
             section_data = data.get(section, {})
             for field, widget in fields.items():
@@ -158,6 +234,22 @@ class BuggyEditor:
         name = self.name_entry.get()
 
         new_data = {"name": name}
+        motor_mode = self.motor_mode.get()
+        motor_sections = {
+            "shared": ("motor",),
+            "left_only": ("left_motor",),
+            "right_only": ("right_motor",),
+            "independent": ("left_motor", "right_motor"),
+        }[motor_mode]
+        for section in motor_sections:
+            section_data = {}
+            for field, widget in self.motor_sections[section].items():
+                try:
+                    section_data[field] = float(widget.get())
+                except ValueError:
+                    section_data[field] = widget.get()
+            new_data[section] = section_data
+
         for section, fields in self.section_vars.items():
             section_data = {}
             for field, widget in fields.items():
@@ -194,6 +286,11 @@ class BuggyEditor:
 
     def clear_form(self):
         self.name_entry.delete(0, tk.END)
+        self.motor_mode.set("shared")
+        for section in self.motor_sections.values():
+            for widget in section.values():
+                widget.delete(0, tk.END)
+        self.update_motor_field_visibility()
         for section in self.section_vars.values():
             for field, widget in section.items():
                 if field == "sensor_coordinates":
