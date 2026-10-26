@@ -28,6 +28,7 @@ class ControllerState:
 
     sensor_values: Sequence[float]
     sensor_positions_local: Sequence[Tuple[float, float]]
+    error: float
     previous_left_duty: float
     previous_right_duty: float
     previous_error: float
@@ -91,6 +92,7 @@ def simulate_motion(
             state = ControllerState(
                 sensor_values=sensor_value,
                 sensor_positions_local=sensor_positions_local,
+                error=current_error,
                 previous_left_duty=buggy.motor_drive_board.duty_left,
                 previous_right_duty=buggy.motor_drive_board.duty_right,
                 previous_error=previous_error,

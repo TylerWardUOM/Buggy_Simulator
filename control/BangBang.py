@@ -1,10 +1,9 @@
 from simulation.Simulation import ControllerState
-from .CalculateError import calculate_error
 
 
 def BangBang(state: ControllerState) -> tuple[float, float]:
-    """Run bang-bang control using the default sensor error calculation."""
-    error = calculate_error(state.sensor_values)
+    """Run bang-bang control using the error calculated by the simulation."""
+    error = state.error
     if error == 9:
         duty_left = state.previous_left_duty
         duty_right = state.previous_right_duty

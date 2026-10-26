@@ -18,8 +18,8 @@ def custom_error(sensor_values: Sequence[float]) -> float:
 def custom_controller(
     state: ControllerState,
 ) -> tuple[float, float]:
-    """Return left and right motor duty cycles from sensor readings."""
-    error = custom_error(state.sensor_values)
+    """Return left and right motor duty cycles from the simulation error."""
+    error = state.error
     base_duty = 0.6
     correction = 0.2 * error
     return base_duty - correction, base_duty + correction

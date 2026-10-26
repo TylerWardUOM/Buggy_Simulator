@@ -28,12 +28,31 @@ these values on startup:
 python3 main.py --buggy 1 --track 3 --dt 0.001 --duration 10
 ```
 
+You can select a controller and error calculation using launch arguments:
+
+```bash
+python3 main.py --controller bang-bang --error-function default
+python3 main.py --controller custom-example --error-function custom-example
+```
+
+If `--controller` is omitted, the program displays a numbered list of
+available controllers. Each controller has a default error calculation, so
+`--error-function` is optional and is selected automatically from the
+controller. The available names are:
+
+```text
+controller: bang-bang, custom-example
+error-function: default, custom-example
+```
+
 The available options are:
 
 ```text
 --buggy           Buggy number or name
 --track           Track number or name
---dt              Simulation timestep in seconds
+--controller       Controller name
+--error-function   Error calculation name
+--dt               Simulation timestep in seconds
 --duration        Simulation duration in seconds
 --control-period  Controller update period in seconds (default: 0.01)
 ```
@@ -79,6 +98,7 @@ The controller receives a `state` object. These are the available fields:
 ```python
 state.sensor_values          # Line-sensor readings
 state.sensor_positions_local # Sensor positions relative to the buggy
+state.error                  # Error calculated by the simulation's error_function
 state.previous_left_duty     # Previous left motor duty cycle
 state.previous_right_duty    # Previous right motor duty cycle
 state.previous_error         # Error from the previous controller update
@@ -94,8 +114,8 @@ state.current_time           # Current simulation time in seconds
 may not be able to measure it directly. Use it in a controller only if the
 real buggy has a suitable inclinometer/IMU or another way to estimate slope.
 
-The simulator also accepts an `error_function` for calculating the error shown
-in the results:
+The simulator accepts an `error_function` for calculating the error passed to
+the controller and shown in the results:
 
 ```python
 def error_function(sensor_values):
@@ -119,9 +139,9 @@ results = simulate_motion(
 ```
 
 The existing `BangBang` controller and `calculate_error` function remain the
-defaults. A custom controller may calculate its own error internally; pass
-the same error function to `simulate_motion` if you also want that error
-recorded in the plots and results.
+defaults. A custom controller should normally use `state.error`; pass a
+different error function to `simulate_motion` when it needs a different error
+calculation.
 
 ## Two types of tests
 
